@@ -14,9 +14,12 @@
     <uc-stock-finder></uc-stock-finder>
 
     <script>
-      const stockFinderEl = document.querySelector('uc-stock-finder');
-      stockFinderEl.addEventListener('ucSymbolSelected', event => {
+      const stockFinderEl = document.querySelector("uc-stock-finder");
+      stockFinderEl.addEventListener("ucSymbolSelected", (event) => {
         console.log(event);
+      });
+      stockFinderEl.addEventListener("ucFindStocks", (event) => {
+        console.log(event.detail);
       });
     </script>
   </body>

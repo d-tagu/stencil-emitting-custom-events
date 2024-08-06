@@ -1,11 +1,19 @@
-import { Component, State, Element, Prop, Watch } from '@stencil/core';
+import {
+  Component,
+  State,
+  Element,
+  Prop,
+  Watch,
+  Event,
+  EventEmitter,
+} from "@stencil/core";
 
-import { AV_API_KEY } from '../../global/global';
+import { AV_API_KEY } from "../../global/global";
 
 @Component({
-  tag: 'uc-stock-price',
-  styleUrl: './stock-price.css',
-  shadow: true
+  tag: "uc-stock-price",
+  styleUrl: "./stock-price.css",
+  shadow: true,
 })
 export class StockPrice {
   stockInput: HTMLInputElement;
@@ -18,9 +26,9 @@ export class StockPrice {
   @State() stockInputValid = false;
   @State() error: string;
 
-  @Prop({mutable: true, reflectToAttr: true}) stockSymbol: string;
+  @Prop({ mutable: true, reflectToAttr: true }) stockSymbol: string;
 
-  @Watch('stockSymbol')
+  @Watch("stockSymbol")
   stockSymbolChanged(newValue: string, oldValue: string) {
     if (newValue !== oldValue) {
       this.stockUserInput = newValue;
@@ -28,9 +36,12 @@ export class StockPrice {
     }
   }
 
+  @Event({ bubbles: true, composed: true })
+  ucPriceSubmitted: EventEmitter<string>;
+
   onUserInput(event: Event) {
     this.stockUserInput = (event.target as HTMLInputElement).value;
-    if (this.stockUserInput.trim() !== '') {
+    if (this.stockUserInput.trim() !== "") {
       this.stockInputValid = true;
     } else {
       this.stockInputValid = false;
@@ -45,12 +56,12 @@ export class StockPrice {
   }
 
   componentWillLoad() {
-    console.log('componentWillLoad');
+    console.log("componentWillLoad");
     console.log(this.stockSymbol);
   }
 
   componentDidLoad() {
-    console.log('componentDidLoad');
+    console.log("componentDidLoad");
     if (this.stockSymbol) {
       // this.initialStockSymbol = this.stockSymbol;
       this.stockUserInput = this.stockSymbol;
@@ -60,11 +71,11 @@ export class StockPrice {
   }
 
   componentWillUpdate() {
-    console.log('componentWillUpdate');
+    console.log("componentWillUpdate");
   }
 
   componentDidUpdate() {
-    console.log('componentDidUpdate');
+    console.log("componentDidUpdate");
     // if (this.stockSymbol !== this.initialStockSymbol) {
     //   this.initialStockSymbol = this.stockSymbol;
     //   this.fetchStockPrice(this.stockSymbol);
@@ -72,29 +83,33 @@ export class StockPrice {
   }
 
   componentDidUnload() {
-    console.log('componentDidUnload');
+    console.log("componentDidUnload");
   }
 
   fetchStockPrice(stockSymbol: string) {
     fetch(
       `https://www.alphavantage.co/query?function=GLOBAL_QUOTE&symbol=${stockSymbol}&apikey=${AV_API_KEY}`
     )
-      .then(res => {
+      .then((res) => {
         if (res.status !== 200) {
-          throw new Error('Invalid!');
+          throw new Error("Invalid!");
         }
         return res.json();
       })
-      .then(parsedRes => {
-        if (!parsedRes['Global Quote']['05. price']) {
-          throw new Error('Invalid symbol!');
+      .then((parsedRes) => {
+        if (!parsedRes["Global Quote"]["05. price"]) {
+          throw new Error("Invalid symbol!");
         }
         this.error = null;
-        this.fetchedPrice = +parsedRes['Global Quote']['05. price'];
+        this.fetchedPrice = +parsedRes["Global Quote"]["05. price"];
       })
-      .catch(err => {
+      .catch((err) => {
         this.error = err.message;
       });
+  }
+
+  onSelectSymbol(symbol: string) {
+    this.ucPriceSubmitted.emit(symbol);
   }
 
   render() {
@@ -109,15 +124,19 @@ export class StockPrice {
       <form onSubmit={this.onFetchStockPrice.bind(this)}>
         <input
           id="stock-symbol"
-          ref={el => (this.stockInput = el)}
+          ref={(el) => (this.stockInput = el)}
           value={this.stockUserInput}
           onInput={this.onUserInput.bind(this)}
         />
-        <button type="submit" disabled={!this.stockInputValid}>
+        <button
+          type="submit"
+          disabled={!this.stockInputValid}
+          onClick={this.onSelectSymbol.bind(this)}
+        >
           Fetch
         </button>
       </form>,
-      <div>{dataContent}</div>
+      <div>{dataContent}</div>,
     ];
   }
 }

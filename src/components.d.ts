@@ -14,6 +14,7 @@ export namespace Components {
 
   interface UcStockFinder {}
   interface UcStockFinderAttributes extends StencilHTMLAttributes {
+    'onUcFindStocks'?: (event: CustomEvent<string>) => void;
     'onUcSymbolSelected'?: (event: CustomEvent<string>) => void;
   }
 
@@ -21,6 +22,7 @@ export namespace Components {
     'stockSymbol': string;
   }
   interface UcStockPriceAttributes extends StencilHTMLAttributes {
+    'onUcPriceSubmitted'?: (event: CustomEvent<string>) => void;
     'stockSymbol'?: string;
   }
 }
